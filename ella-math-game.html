@@ -92,6 +92,40 @@
     .btn-option:active {
       transform: scale(0.95);
     }
+
+    /* Memory Match card flip */
+    .card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.4s ease;
+      transform-style: preserve-3d;
+    }
+    .card-flipped .card-inner { transform: rotateY(180deg); }
+    .card-matched .card-inner { transform: rotateY(180deg) scale(0.9); opacity: 0.6; }
+    .card-front, .card-back {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      border-radius: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .card-back { transform: rotateY(180deg); }
+
+    @keyframes popIn {
+      0% { transform: scale(0); }
+      70% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+    .animate-popIn { animation: popIn 0.3s ease-out; }
+
+    @keyframes correctFlash {
+      0% { box-shadow: 0 0 0 0 rgba(74,222,128,0.7); }
+      100% { box-shadow: 0 0 0 15px rgba(74,222,128,0); }
+    }
+    .animate-correctFlash { animation: correctFlash 0.6s ease-out; }
   </style>
 </head>
 <body class="min-h-screen bg-gradient-to-br from-purple-400 via-pink-300 to-yellow-200">
@@ -225,7 +259,54 @@
         } catch(e) {}
       }, []);
 
-      return { playCorrect, playWrong, playClick, playLevelUp, playCelebration, playSad };
+      const playFlip = useCallback(() => {
+        try {
+          const ctx = getCtx();
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain); gain.connect(ctx.destination);
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(600, ctx.currentTime);
+          osc.frequency.setValueAtTime(900, ctx.currentTime + 0.05);
+          gain.gain.setValueAtTime(0.12, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+          osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.1);
+        } catch(e) {}
+      }, []);
+
+      const playMatch = useCallback(() => {
+        try {
+          const ctx = getCtx();
+          [880, 1108.73, 1318.51].forEach((freq, i) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain); gain.connect(ctx.destination);
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.08);
+            gain.gain.setValueAtTime(0.2, ctx.currentTime + i * 0.08);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + i * 0.08 + 0.12);
+            osc.start(ctx.currentTime + i * 0.08);
+            osc.stop(ctx.currentTime + i * 0.08 + 0.12);
+          });
+        } catch(e) {}
+      }, []);
+
+      const playPop = useCallback(() => {
+        try {
+          const ctx = getCtx();
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain); gain.connect(ctx.destination);
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(400, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(150, ctx.currentTime + 0.08);
+          gain.gain.setValueAtTime(0.15, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+          osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.1);
+        } catch(e) {}
+      }, []);
+
+      return { playCorrect, playWrong, playClick, playLevelUp, playCelebration, playSad, playFlip, playMatch, playPop };
     };
 
     // ===== Game Config =====
@@ -404,6 +485,461 @@
       );
     }
 
+    // ===== REWARD MINI-GAMES =====
+
+    // --- 1. Memory Match ---
+    function MemoryMatch({ onDone, sound }) {
+      const emojis = ['🐶','🐱','🐸','🦁','🐰','🐼'];
+      const [cards, setCards] = useState(() => {
+        const deck = [...emojis, ...emojis].map((emoji, i) => ({ id: i, emoji, flipped: false, matched: false }));
+        for (let i = deck.length - 1; i > 0; i--) { const j = Math.floor(Math.random()*(i+1)); [deck[i],deck[j]]=[deck[j],deck[i]]; }
+        return deck;
+      });
+      const [selected, setSelected] = useState([]);
+      const [locked, setLocked] = useState(false);
+      const [timer, setTimer] = useState(30);
+      const [matchCount, setMatchCount] = useState(0);
+      const [done, setDone] = useState(false);
+
+      useEffect(() => {
+        if (done) return;
+        const t = setInterval(() => setTimer(p => {
+          if (p <= 1) { clearInterval(t); setDone(true); return 0; }
+          return p - 1;
+        }), 1000);
+        return () => clearInterval(t);
+      }, [done]);
+
+      useEffect(() => {
+        if (matchCount === 6 && !done) {
+          setDone(true);
+          sound.playCelebration();
+        }
+      }, [matchCount]);
+
+      useEffect(() => {
+        if (done) { const t = setTimeout(onDone, 2500); return () => clearTimeout(t); }
+      }, [done]);
+
+      const handleClick = (idx) => {
+        if (locked || cards[idx].flipped || cards[idx].matched || done) return;
+        sound.playFlip();
+        const newCards = [...cards];
+        newCards[idx].flipped = true;
+        setCards(newCards);
+        const newSel = [...selected, idx];
+        setSelected(newSel);
+
+        if (newSel.length === 2) {
+          setLocked(true);
+          if (newCards[newSel[0]].emoji === newCards[newSel[1]].emoji) {
+            setTimeout(() => {
+              sound.playMatch();
+              const c = [...newCards];
+              c[newSel[0]].matched = true;
+              c[newSel[1]].matched = true;
+              setCards(c);
+              setMatchCount(m => m + 1);
+              setSelected([]);
+              setLocked(false);
+            }, 400);
+          } else {
+            setTimeout(() => {
+              const c = [...newCards];
+              c[newSel[0]].flipped = false;
+              c[newSel[1]].flipped = false;
+              setCards(c);
+              setSelected([]);
+              setLocked(false);
+            }, 800);
+          }
+        }
+      };
+
+      return (
+        <div className="min-h-screen p-4 flex flex-col items-center justify-center">
+          <div className="text-center mb-4 animate-slideUp">
+            <h2 className="text-3xl font-black text-white mb-2">🧠 משחק זיכרון!</h2>
+            <p className="text-white/80 font-bold">מצאו את כל הזוגות!</p>
+            <div className="flex gap-4 justify-center mt-2">
+              <span className="bg-white/30 rounded-full px-4 py-1 text-white font-bold">⏱️ {timer}</span>
+              <span className="bg-white/30 rounded-full px-4 py-1 text-white font-bold">✅ {matchCount}/6</span>
+            </div>
+          </div>
+          <div className="grid grid-cols-4 gap-2 max-w-sm mx-auto" style={{ perspective: '1000px' }}>
+            {cards.map((card, i) => (
+              <div
+                key={card.id}
+                onClick={() => handleClick(i)}
+                className={`w-20 h-20 md:w-24 md:h-24 cursor-pointer ${card.flipped || card.matched ? 'card-flipped' : ''} ${card.matched ? 'card-matched' : ''}`}
+              >
+                <div className="card-inner">
+                  <div className="card-front bg-gradient-to-br from-indigo-400 to-purple-500 shadow-lg border-2 border-white/30">
+                    <span className="text-2xl">❓</span>
+                  </div>
+                  <div className="card-back bg-white shadow-lg border-2 border-purple-200">
+                    <span className="text-4xl">{card.emoji}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          {done && (
+            <div className="mt-4 animate-bounceIn text-center">
+              <p className="text-2xl font-black text-white">
+                {matchCount === 6 ? '🎉 מצאתם את כולם! 🎉' : `👏 מצאתם ${matchCount} זוגות!`}
+              </p>
+            </div>
+          )}
+          <button onClick={onDone} className="mt-4 bg-white/30 hover:bg-white/50 text-white font-bold rounded-full px-5 py-2">
+            🏠 חזרה
+          </button>
+        </div>
+      );
+    }
+
+    // --- 2. Pattern Sequence ---
+    function PatternSequence({ onDone, sound }) {
+      const allPatterns = [
+        { seq: ['🔴','🔵','🔴','🔵'], answer: '🔴', options: ['🔴','🔵','🟢','🟡'] },
+        { seq: ['🟡','🟡','🟢','🟡','🟡','🟢'], answer: '🟡', options: ['🟢','🟡','🔴','🔵'] },
+        { seq: ['⭐','⭐⭐','⭐⭐⭐'], answer: '⭐⭐⭐⭐', options: ['⭐⭐⭐⭐','⭐⭐','⭐','⭐⭐⭐'] },
+        { seq: ['🌙','🌙🌙','🌙🌙🌙'], answer: '🌙🌙🌙🌙', options: ['🌙🌙🌙🌙','🌙🌙','🌙','🌙🌙🌙🌙🌙'] },
+        { seq: ['❤️','💛','❤️','💛'], answer: '❤️', options: ['💛','❤️','💚','💙'] },
+        { seq: ['🐶','🐱','🐶','🐱'], answer: '🐶', options: ['🐱','🐶','🐸','🐰'] },
+        { seq: ['1️⃣','2️⃣','3️⃣'], answer: '4️⃣', options: ['4️⃣','5️⃣','1️⃣','6️⃣'] },
+        { seq: ['🔵','🟢','🟡','🔵','🟢','🟡'], answer: '🔵', options: ['🔵','🟡','🟢','🔴'] },
+        { seq: ['🌸','🌸','🌺','🌸','🌸','🌺'], answer: '🌸', options: ['🌸','🌺','🌻','🌹'] },
+      ];
+      const [rounds] = useState(() => {
+        const shuffled = [...allPatterns].sort(() => Math.random() - 0.5);
+        return shuffled.slice(0, 3);
+      });
+      const [current, setCurrent] = useState(0);
+      const [score, setScore] = useState(0);
+      const [feedback, setFeedback] = useState(null);
+      const [done, setDone] = useState(false);
+
+      useEffect(() => {
+        if (done) { const t = setTimeout(onDone, 2500); return () => clearTimeout(t); }
+      }, [done]);
+
+      const handleAnswer = (ans) => {
+        if (feedback) return;
+        const correct = ans === rounds[current].answer;
+        if (correct) { sound.playCorrect(); setScore(s => s + 1); }
+        else { sound.playWrong(); }
+        setFeedback(correct ? 'correct' : 'wrong');
+
+        setTimeout(() => {
+          setFeedback(null);
+          if (current < 2) { setCurrent(c => c + 1); }
+          else { setDone(true); sound.playCelebration(); }
+        }, 1200);
+      };
+
+      const p = rounds[current];
+      const shuffledOptions = useState(() => rounds.map(r => [...r.options].sort(() => Math.random() - 0.5)))[0];
+
+      return (
+        <div className="min-h-screen p-4 flex flex-col items-center justify-center">
+          <div className="text-center mb-4 animate-slideUp">
+            <h2 className="text-3xl font-black text-white mb-2">🧩 השלימו את הסדרה!</h2>
+            <span className="bg-white/30 rounded-full px-4 py-1 text-white font-bold">שאלה {current + 1}/3</span>
+          </div>
+          {!done && (
+            <div className="bg-white/90 backdrop-blur-md rounded-3xl shadow-2xl p-6 max-w-md w-full text-center animate-slideUp">
+              <div className="flex items-center justify-center gap-2 flex-wrap mb-6 text-3xl">
+                {p.seq.map((item, i) => (
+                  <span key={i} className="bg-purple-50 rounded-xl p-2 min-w-[50px]">{item}</span>
+                ))}
+                <span className="bg-yellow-100 rounded-xl p-2 min-w-[50px] border-2 border-dashed border-yellow-400 text-2xl font-black text-yellow-500">?</span>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                {shuffledOptions[current].map((opt, i) => (
+                  <button
+                    key={i}
+                    onClick={() => handleAnswer(opt)}
+                    className={`btn-option rounded-2xl p-4 text-2xl font-bold shadow-lg transition-all ${
+                      feedback && opt === p.answer ? 'bg-green-400 text-white scale-110' :
+                      feedback ? 'bg-gray-200 text-gray-400' :
+                      'bg-gradient-to-br from-indigo-400 to-purple-500 text-white hover:shadow-xl'
+                    }`}
+                  >
+                    {opt}
+                  </button>
+                ))}
+              </div>
+              {feedback && (
+                <p className={`mt-3 text-xl font-bold ${feedback === 'correct' ? 'text-green-600' : 'text-red-500'}`}>
+                  {feedback === 'correct' ? '✅ נכון!' : '❌ לא בדיוק...'}
+                </p>
+              )}
+            </div>
+          )}
+          {done && (
+            <div className="animate-bounceIn text-center">
+              <p className="text-3xl font-black text-white">🎉 ענו נכון על {score} מתוך 3! 🎉</p>
+            </div>
+          )}
+          <button onClick={onDone} className="mt-4 bg-white/30 hover:bg-white/50 text-white font-bold rounded-full px-5 py-2">
+            🏠 חזרה
+          </button>
+        </div>
+      );
+    }
+
+    // --- 3. Spot the Difference ---
+    function SpotDifference({ onDone, sound }) {
+      const emojiPool = ['🌸','🌻','🍎','🍊','🐶','🐱','⭐','🌈','🎀','🦋','🍀','🌺','🎈','🐝','🍒','🐠'];
+      const [grid] = useState(() => {
+        const g = Array.from({ length: 16 }, () => emojiPool[Math.floor(Math.random() * emojiPool.length)]);
+        return g;
+      });
+      const [diffIndices] = useState(() => {
+        const indices = [];
+        while (indices.length < 3) {
+          const idx = Math.floor(Math.random() * 16);
+          if (!indices.includes(idx)) indices.push(idx);
+        }
+        return indices;
+      });
+      const [modifiedGrid] = useState(() => {
+        const g = [...grid];
+        diffIndices.forEach(idx => {
+          let newEmoji;
+          do { newEmoji = emojiPool[Math.floor(Math.random() * emojiPool.length)]; } while (newEmoji === g[idx]);
+          g[idx] = newEmoji;
+        });
+        return g;
+      });
+      const [found, setFound] = useState([]);
+      const [timer, setTimer] = useState(30);
+      const [done, setDone] = useState(false);
+      const [wrongTap, setWrongTap] = useState(null);
+
+      useEffect(() => {
+        if (done) return;
+        const t = setInterval(() => setTimer(p => {
+          if (p <= 1) { clearInterval(t); setDone(true); return 0; }
+          return p - 1;
+        }), 1000);
+        return () => clearInterval(t);
+      }, [done]);
+
+      useEffect(() => {
+        if (found.length === 3 && !done) { setDone(true); sound.playCelebration(); }
+      }, [found]);
+
+      useEffect(() => {
+        if (done) { const t = setTimeout(onDone, 2500); return () => clearTimeout(t); }
+      }, [done]);
+
+      const handleTap = (idx) => {
+        if (done || found.includes(idx)) return;
+        if (diffIndices.includes(idx)) {
+          sound.playMatch();
+          setFound(f => [...f, idx]);
+        } else {
+          sound.playPop();
+          setWrongTap(idx);
+          setTimeout(() => setWrongTap(null), 400);
+        }
+      };
+
+      const renderGrid = (g, clickable) => (
+        <div className="grid grid-cols-4 gap-1">
+          {g.map((emoji, i) => (
+            <div
+              key={i}
+              onClick={clickable ? () => handleTap(i) : undefined}
+              className={`w-12 h-12 md:w-14 md:h-14 flex items-center justify-center rounded-lg text-xl md:text-2xl transition-all
+                ${clickable ? 'cursor-pointer hover:bg-yellow-100' : ''}
+                ${clickable && found.includes(i) ? 'bg-green-200 ring-2 ring-green-500 animate-correctFlash' : 'bg-white'}
+                ${clickable && wrongTap === i ? 'animate-shake bg-red-100' : ''}
+              `}
+            >
+              {emoji}
+            </div>
+          ))}
+        </div>
+      );
+
+      return (
+        <div className="min-h-screen p-4 flex flex-col items-center justify-center">
+          <div className="text-center mb-4 animate-slideUp">
+            <h2 className="text-3xl font-black text-white mb-2">🔍 מצאו את ההבדלים!</h2>
+            <p className="text-white/80 font-bold">לחצו על ההבדלים בצד ימין</p>
+            <div className="flex gap-4 justify-center mt-2">
+              <span className="bg-white/30 rounded-full px-4 py-1 text-white font-bold">⏱️ {timer}</span>
+              <span className="bg-white/30 rounded-full px-4 py-1 text-white font-bold">✅ {found.length}/3</span>
+            </div>
+          </div>
+          <div className="flex gap-4 items-start animate-slideUp">
+            <div className="text-center">
+              <p className="text-white font-bold mb-2 text-sm">מקור</p>
+              <div className="bg-white/80 rounded-2xl p-2 shadow-xl">{renderGrid(grid, false)}</div>
+            </div>
+            <div className="text-center">
+              <p className="text-white font-bold mb-2 text-sm">מצאו הבדלים 👆</p>
+              <div className="bg-white/80 rounded-2xl p-2 shadow-xl">{renderGrid(modifiedGrid, true)}</div>
+            </div>
+          </div>
+          {done && (
+            <div className="mt-4 animate-bounceIn text-center">
+              <p className="text-2xl font-black text-white">
+                {found.length === 3 ? '🎉 מצאתם את כולם! 🎉' : `👏 מצאתם ${found.length} מתוך 3!`}
+              </p>
+            </div>
+          )}
+          <button onClick={onDone} className="mt-4 bg-white/30 hover:bg-white/50 text-white font-bold rounded-full px-5 py-2">
+            🏠 חזרה
+          </button>
+        </div>
+      );
+    }
+
+    // --- 4. Word Scramble (Hebrew) ---
+    function WordScramble({ onDone, sound }) {
+      const allWords = [
+        { word: 'כלב', emoji: '🐶' },
+        { word: 'חתול', emoji: '🐱' },
+        { word: 'פרח', emoji: '🌸' },
+        { word: 'בית', emoji: '🏠' },
+        { word: 'שמש', emoji: '☀️' },
+        { word: 'ספר', emoji: '📖' },
+        { word: 'דג', emoji: '🐟' },
+        { word: 'עץ', emoji: '🌳' },
+        { word: 'כדור', emoji: '⚽' },
+        { word: 'לב', emoji: '❤️' },
+      ];
+      const [rounds] = useState(() => {
+        const shuffled = [...allWords].sort(() => Math.random() - 0.5);
+        return shuffled.slice(0, 3);
+      });
+      const [current, setCurrent] = useState(0);
+      const [scrambled, setScrambled] = useState(() => {
+        const letters = rounds[0].word.split('');
+        for (let i = letters.length - 1; i > 0; i--) { const j = Math.floor(Math.random()*(i+1)); [letters[i],letters[j]]=[letters[j],letters[i]]; }
+        return letters;
+      });
+      const [selected, setSelected] = useState([]);
+      const [available, setAvailable] = useState(() => scrambled.map((_, i) => i));
+      const [feedback, setFeedback] = useState(null);
+      const [score, setScore] = useState(0);
+      const [done, setDone] = useState(false);
+
+      const setupRound = (roundIdx) => {
+        const letters = rounds[roundIdx].word.split('');
+        for (let i = letters.length - 1; i > 0; i--) { const j = Math.floor(Math.random()*(i+1)); [letters[i],letters[j]]=[letters[j],letters[i]]; }
+        setScrambled(letters);
+        setSelected([]);
+        setAvailable(letters.map((_, i) => i));
+        setFeedback(null);
+      };
+
+      useEffect(() => {
+        if (done) { const t = setTimeout(onDone, 2500); return () => clearTimeout(t); }
+      }, [done]);
+
+      const handleLetterTap = (scrIdx) => {
+        if (feedback || !available.includes(scrIdx)) return;
+        sound.playFlip();
+        const newSel = [...selected, scrIdx];
+        setSelected(newSel);
+        setAvailable(available.filter(i => i !== scrIdx));
+
+        // Check if word is complete
+        if (newSel.length === scrambled.length) {
+          const built = newSel.map(i => scrambled[i]).join('');
+          const correct = built === rounds[current].word;
+          if (correct) {
+            sound.playCorrect();
+            setScore(s => s + 1);
+            setFeedback('correct');
+          } else {
+            sound.playWrong();
+            setFeedback('wrong');
+          }
+          setTimeout(() => {
+            if (current < 2) {
+              const next = current + 1;
+              setCurrent(next);
+              setupRound(next);
+            } else {
+              setDone(true);
+              sound.playCelebration();
+            }
+          }, 1200);
+        }
+      };
+
+      const handleUndo = () => {
+        if (selected.length === 0 || feedback) return;
+        const last = selected[selected.length - 1];
+        setSelected(selected.slice(0, -1));
+        setAvailable([...available, last]);
+      };
+
+      const r = rounds[current];
+      return (
+        <div className="min-h-screen p-4 flex flex-col items-center justify-center">
+          <div className="text-center mb-4 animate-slideUp">
+            <h2 className="text-3xl font-black text-white mb-2">🔤 סדרו את המילה!</h2>
+            <span className="bg-white/30 rounded-full px-4 py-1 text-white font-bold">מילה {current + 1}/3</span>
+          </div>
+          {!done && (
+            <div className="bg-white/90 backdrop-blur-md rounded-3xl shadow-2xl p-6 max-w-md w-full text-center animate-slideUp">
+              <div className="text-7xl mb-4">{r.emoji}</div>
+
+              {/* Built word so far */}
+              <div className="flex justify-center gap-2 mb-6 min-h-[60px]" dir="rtl">
+                {rounds[current].word.split('').map((_, i) => (
+                  <div key={i} className={`w-12 h-14 rounded-xl border-2 flex items-center justify-center text-2xl font-black
+                    ${i < selected.length ? 'bg-purple-100 border-purple-400' : 'bg-gray-50 border-dashed border-gray-300'}`}>
+                    {i < selected.length ? scrambled[selected[i]] : ''}
+                  </div>
+                ))}
+              </div>
+
+              {/* Scrambled letters to tap */}
+              <div className="flex justify-center gap-2 mb-4" dir="rtl">
+                {scrambled.map((letter, i) => (
+                  <button
+                    key={i}
+                    onClick={() => handleLetterTap(i)}
+                    disabled={!available.includes(i)}
+                    className={`btn-option w-14 h-14 rounded-xl text-2xl font-black shadow-md transition-all
+                      ${available.includes(i) ? 'bg-gradient-to-br from-pink-400 to-purple-500 text-white hover:shadow-lg' : 'bg-gray-200 text-gray-300'}`}
+                  >
+                    {letter}
+                  </button>
+                ))}
+              </div>
+
+              <button onClick={handleUndo} className="text-purple-500 font-bold text-lg hover:text-purple-700">
+                ↩️ בטל
+              </button>
+
+              {feedback && (
+                <p className={`mt-3 text-xl font-bold animate-bounceIn ${feedback === 'correct' ? 'text-green-600' : 'text-red-500'}`}>
+                  {feedback === 'correct' ? `✅ ${r.word} - נכון!` : `❌ המילה היא: ${r.word}`}
+                </p>
+              )}
+            </div>
+          )}
+          {done && (
+            <div className="animate-bounceIn text-center">
+              <p className="text-3xl font-black text-white">🎉 סידרתם {score} מילים נכון! 🎉</p>
+            </div>
+          )}
+          <button onClick={onDone} className="mt-4 bg-white/30 hover:bg-white/50 text-white font-bold rounded-full px-5 py-2">
+            🏠 חזרה
+          </button>
+        </div>
+      );
+    }
+
     // ===== Main App =====
     function App() {
       const [screen, setScreen] = useState('home');
@@ -441,6 +977,7 @@
       const [showPhoto, setShowPhoto] = useState(null); // 'happy' | 'sad' | null
       const [showBriefing, setShowBriefing] = useState(false);
       const [errors, setErrors] = useState(0);
+      const [rewardGame, setRewardGame] = useState(0);
 
       const sound = useSound();
 
@@ -608,7 +1145,8 @@
               setShowPhoto(null);
               setShowConfetti(false);
               if (didPass) {
-                setScreen('home');
+                setRewardGame(Math.floor(Math.random() * 4));
+                setScreen('reward');
               } else {
                 startGame(selectedLevel);
               }
@@ -676,6 +1214,13 @@
             </div>
           </div>
         );
+      }
+
+      // ===== REWARD MINI-GAME =====
+      if (screen === 'reward') {
+        const games = [MemoryMatch, PatternSequence, SpotDifference, WordScramble];
+        const RewardGame = games[rewardGame];
+        return <RewardGame onDone={() => { sound.playClick(); setScreen('home'); }} sound={sound} />;
       }
 
       // ===== HOME SCREEN =====
