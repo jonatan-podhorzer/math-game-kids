@@ -102,7 +102,8 @@
       transform-style: preserve-3d;
     }
     .card-flipped .card-inner { transform: rotateY(180deg); }
-    .card-matched .card-inner { transform: rotateY(180deg) scale(0.9); opacity: 0.6; }
+    .card-matched .card-inner { transform: rotateY(180deg); }
+    .card-matched .card-back { background: #d1fae5 !important; border-color: #34d399 !important; box-shadow: 0 0 12px rgba(52,211,153,0.5); }
     .card-front, .card-back {
       position: absolute;
       inset: 0;
@@ -489,7 +490,11 @@
 
     // --- 1. Memory Match ---
     function MemoryMatch({ onDone, sound }) {
-      const emojis = ['🐶','🐱','🐸','🦁','🐰','🐼'];
+      const allEmojis = ['🐶','🐱','🐸','🦁','🐰','🐼','🦊','🐵','🐮','🐷','🐔','🦄','🐙','🐬','🦋','🐞','🐢','🐘'];
+      const emojis = useState(() => {
+        const shuffled = [...allEmojis].sort(() => Math.random() - 0.5);
+        return shuffled.slice(0, 6);
+      })[0];
       const [cards, setCards] = useState(() => {
         const deck = [...emojis, ...emojis].map((emoji, i) => ({ id: i, emoji, flipped: false, matched: false }));
         for (let i = deck.length - 1; i > 0; i--) { const j = Math.floor(Math.random()*(i+1)); [deck[i],deck[j]]=[deck[j],deck[i]]; }
@@ -610,6 +615,17 @@
         { seq: ['1️⃣','2️⃣','3️⃣'], answer: '4️⃣', options: ['4️⃣','5️⃣','1️⃣','6️⃣'] },
         { seq: ['🔵','🟢','🟡','🔵','🟢','🟡'], answer: '🔵', options: ['🔵','🟡','🟢','🔴'] },
         { seq: ['🌸','🌸','🌺','🌸','🌸','🌺'], answer: '🌸', options: ['🌸','🌺','🌻','🌹'] },
+        { seq: ['🍎','🍊','🍋','🍎','🍊','🍋'], answer: '🍎', options: ['🍎','🍊','🍋','🍇'] },
+        { seq: ['🐟','🐟','🐠','🐟','🐟','🐠'], answer: '🐟', options: ['🐟','🐠','🐡','🦈'] },
+        { seq: ['🌈','🌧️','🌈','🌧️'], answer: '🌈', options: ['🌈','🌧️','☀️','⛈️'] },
+        { seq: ['🎈','🎈','🎁','🎈','🎈','🎁'], answer: '🎈', options: ['🎈','🎁','🎀','🎊'] },
+        { seq: ['🔺','🔻','🔺','🔻'], answer: '🔺', options: ['🔺','🔻','⬛','⬜'] },
+        { seq: ['🌻','🌻','🌹','🌻','🌻','🌹'], answer: '🌻', options: ['🌻','🌹','🌷','🌺'] },
+        { seq: ['2️⃣','4️⃣','6️⃣'], answer: '8️⃣', options: ['8️⃣','7️⃣','9️⃣','5️⃣'] },
+        { seq: ['🦋','🐛','🦋','🐛'], answer: '🦋', options: ['🦋','🐛','🐝','🐞'] },
+        { seq: ['🚗','🚙','🚕','🚗','🚙','🚕'], answer: '🚗', options: ['🚗','🚙','🚕','🚌'] },
+        { seq: ['🍕','🍔','🍕','🍔'], answer: '🍕', options: ['🍕','🍔','🌭','🍟'] },
+        { seq: ['👋','👏','👋','👏'], answer: '👋', options: ['👋','👏','🤝','✋'] },
       ];
       const [rounds] = useState(() => {
         const shuffled = [...allPatterns].sort(() => Math.random() - 0.5);
@@ -812,6 +828,21 @@
         { word: 'עץ', emoji: '🌳' },
         { word: 'כדור', emoji: '⚽' },
         { word: 'לב', emoji: '❤️' },
+        { word: 'ילד', emoji: '👦' },
+        { word: 'ילדה', emoji: '👧' },
+        { word: 'גשם', emoji: '🌧️' },
+        { word: 'כוכב', emoji: '⭐' },
+        { word: 'ירח', emoji: '🌙' },
+        { word: 'תפוח', emoji: '🍎' },
+        { word: 'דוב', emoji: '🐻' },
+        { word: 'ציפור', emoji: '🐦' },
+        { word: 'אריה', emoji: '🦁' },
+        { word: 'פיל', emoji: '🐘' },
+        { word: 'צבע', emoji: '🎨' },
+        { word: 'מים', emoji: '💧' },
+        { word: 'אבן', emoji: '🪨' },
+        { word: 'רכב', emoji: '🚗' },
+        { word: 'עוגה', emoji: '🎂' },
       ];
       const [rounds] = useState(() => {
         const shuffled = [...allWords].sort(() => Math.random() - 0.5);
@@ -1004,10 +1035,24 @@
         sound.playClick();
         setSelectedLevel(level);
         const opIds = ['add', 'sub', 'mul'];
-        const qs = Array.from({ length: numQuestions }, () => {
+        const qs = [];
+        const seen = new Set();
+        let attempts = 0;
+        while (qs.length < numQuestions && attempts < numQuestions * 20) {
+          attempts++;
           const randomOp = opIds[Math.floor(Math.random() * opIds.length)];
-          return generateQuestion(randomOp, level.max);
-        });
+          const q = generateQuestion(randomOp, level.max);
+          const key = `${q.a}${q.symbol}${q.b}`;
+          if (!seen.has(key)) {
+            seen.add(key);
+            qs.push(q);
+          }
+        }
+        // Fallback: if not enough unique questions, fill remaining
+        while (qs.length < numQuestions) {
+          const randomOp = opIds[Math.floor(Math.random() * opIds.length)];
+          qs.push(generateQuestion(randomOp, level.max));
+        }
         setQuestions(qs);
         setCurrentQ(0);
         setScore(0);
