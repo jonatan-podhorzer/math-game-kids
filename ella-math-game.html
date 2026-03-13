@@ -497,7 +497,7 @@
       });
       const [selected, setSelected] = useState([]);
       const [locked, setLocked] = useState(false);
-      const [timer, setTimer] = useState(30);
+      const [timer, setTimer] = useState(45);
       const [matchCount, setMatchCount] = useState(0);
       const [done, setDone] = useState(false);
 
@@ -679,7 +679,7 @@
           )}
           {done && (
             <div className="animate-bounceIn text-center">
-              <p className="text-3xl font-black text-white">🎉 ענו נכון על {score} מתוך 3! 🎉</p>
+              <p className="text-3xl font-black text-white">🎉 עניתם נכון על {score} מתוך 3! 🎉</p>
             </div>
           )}
           <button onClick={onDone} className="mt-4 bg-white/30 hover:bg-white/50 text-white font-bold rounded-full px-5 py-2">
@@ -714,7 +714,7 @@
         return g;
       });
       const [found, setFound] = useState([]);
-      const [timer, setTimer] = useState(30);
+      const [timer, setTimer] = useState(45);
       const [done, setDone] = useState(false);
       const [wrongTap, setWrongTap] = useState(null);
 
@@ -978,6 +978,7 @@
       const [showBriefing, setShowBriefing] = useState(false);
       const [errors, setErrors] = useState(0);
       const [rewardGame, setRewardGame] = useState(0);
+      const [showRewardIntro, setShowRewardIntro] = useState(false);
 
       const sound = useSound();
 
@@ -1023,10 +1024,10 @@
         setShowBriefing(true);
         setScreen('game');
 
-        // Auto-dismiss briefing after 5 seconds
+        // Auto-dismiss briefing after 3 seconds
         setTimeout(() => {
           setShowBriefing(false);
-        }, 5000);
+        }, 3000);
       };
 
       const addToHistory = (level, finalScore, pct, didPass) => {
@@ -1146,6 +1147,7 @@
               setShowConfetti(false);
               if (didPass) {
                 setRewardGame(Math.floor(Math.random() * 4));
+                setShowRewardIntro(true);
                 setScreen('reward');
               } else {
                 startGame(selectedLevel);
@@ -1211,6 +1213,22 @@
                 </div>
                 <p className="text-2xl font-bold text-pink-500 animate-float">💪 אתם יכולים! 💪</p>
               </div>
+            </div>
+          </div>
+        );
+      }
+
+      // ===== REWARD INTRO (gift screen) =====
+      if (screen === 'reward' && showRewardIntro) {
+        const gameNames = ['🧠 משחק זיכרון', '🧩 השלמת סדרות', '🔍 מצאו הבדלים', '🔤 סידור מילים'];
+        setTimeout(() => setShowRewardIntro(false), 3000);
+        return (
+          <div className="min-h-screen flex items-center justify-center p-4">
+            <div className="animate-bounceIn text-center">
+              <div className="text-8xl mb-6 animate-float">🎁</div>
+              <h2 className="text-4xl font-black text-white mb-3">קיבלתם פרס!</h2>
+              <p className="text-2xl text-white/90 font-bold mb-4">{gameNames[rewardGame]}</p>
+              <div className="text-5xl animate-float" style={{ animationDelay: '0.5s' }}>🎉🌟🎉</div>
             </div>
           </div>
         );
@@ -1477,10 +1495,22 @@
                     <span>⭐</span>
                     <span className="font-bold text-white">{score}/{currentQ + (answered ? 1 : 0)}</span>
                   </div>
-                  <div className="bg-white/30 backdrop-blur-sm rounded-full px-3 py-2 flex items-center gap-1 text-sm">
-                    <span>🎯</span>
-                    <span className="font-bold text-white">{passPercent}%</span>
-                  </div>
+                  {(() => {
+                    const maxAllowed = numQuestions - Math.ceil(numQuestions * passPercent / 100);
+                    const remaining = maxAllowed - errors;
+                    const isLast = remaining === 1;
+                    const isDanger = remaining <= 0;
+                    return (
+                      <div className={`backdrop-blur-sm rounded-full px-3 py-2 flex items-center gap-1 text-sm transition-all ${
+                        isDanger ? 'bg-red-500/60' : isLast ? 'bg-red-400/50 animate-pulse' : 'bg-white/30'
+                      }`}>
+                        <span>{isDanger ? '🚫' : isLast ? '⚠️' : '❌'}</span>
+                        <span className={`font-bold ${isDanger ? 'text-red-100' : isLast ? 'text-yellow-100' : 'text-white'}`}>
+                          {remaining < 0 ? 0 : remaining} טעויות
+                        </span>
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
 
