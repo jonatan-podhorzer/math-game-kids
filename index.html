@@ -419,13 +419,19 @@
       ]},
     ];
     const WORD_LABELS = {
-      hebrew: { title: '🔤 משחק המילים 🔤', subtitle: '✨ בואו נלמד לאיית! ✨', correct: '✅ נכון!',
+      hebrew: { title: 'אב משחק המילים אב', subtitle: '✨ בואו נלמד לאיית! ✨', correct: '✅ נכון!',
         wrong: '❌ המילה היא: ', spell: '🤔 מה המילה...?', wordOf: 'מילה', undo: '↩️ בטל',
         done: '🎉 סידרתם {s} מילים נכון מתוך {t}! 🎉', mission: 'המשימה שלכם!',
         needCorrect: 'צריך לסדר נכון:', words: 'מילים', allowedErrors: 'מותר לטעות רק:',
         times: 'פעמים', youCanDoIt: '💪 אתם יכולים! 💪', startPlay: '🎮 התחילו לשחק!',
         wordsUpTo: 'מילים בנות', back: '🏠 חזרה', points: 'נקודות', errors: 'טעויות',
         levelLocked: 'ברמה הקודמת 🔒', need: 'צריך',
+        settings: '⚙️ הגדרות', history: '📋 היסטוריה', settingsTitle: '⚙️ הגדרות משחקון',
+        questionsLabel: '📝 מספר מילים במשחקון:', passLabel: '🎯 אחוז הצלחה נדרש:',
+        toPass: 'כדי לעבור צריך לסדר נכון לפחות', outOf: 'מילים מתוך',
+        historyTitle: '📋 10 משחקים אחרונים', noGames: 'עדיין אין משחקים 🎮',
+        dateCol: 'תאריך', levelCol: 'רמה', questionsCol: 'שאלות', requiredCol: 'נדרש',
+        correctCol: 'נכונות', resultCol: 'תוצאה',
       },
       english: { title: '🔠 Word Game 🔠', subtitle: '✨ Learn to spell! ✨', correct: '✅ Correct!',
         wrong: '❌ The word is: ', spell: '🤔 What word is this...?', wordOf: 'Word', undo: '↩️ Undo',
@@ -434,6 +440,12 @@
         times: 'times', youCanDoIt: '💪 You can do it! 💪', startPlay: '🎮 Start Playing!',
         wordsUpTo: 'Words with', back: '🏠 Back', points: 'points', errors: 'mistakes',
         levelLocked: 'in previous level 🔒', need: 'Need',
+        settings: '⚙️ Settings', history: '📋 History', settingsTitle: '⚙️ Game Settings',
+        questionsLabel: '📝 Words per game:', passLabel: '🎯 Pass percentage:',
+        toPass: 'To pass you need to spell at least', outOf: 'words out of',
+        historyTitle: '📋 Last 10 Games', noGames: 'No games yet 🎮',
+        dateCol: 'Date', levelCol: 'Level', questionsCol: 'Words', requiredCol: 'Required',
+        correctCol: 'Correct', resultCol: 'Result',
       },
     };
 
@@ -1040,7 +1052,7 @@
     function TabBar({ activeTab, setActiveTab }) {
       const tabs = [
         { id: 'math', label: 'חשבון', emoji: '🔢', color: 'from-purple-500 to-pink-500' },
-        { id: 'hebrew', label: 'עברית', emoji: '🔤', color: 'from-blue-500 to-cyan-500' },
+        { id: 'hebrew', label: 'עברית', emoji: 'אב', color: 'from-blue-500 to-cyan-500' },
         { id: 'english', label: 'English', emoji: '🔠', color: 'from-green-500 to-emerald-500' },
       ];
       return (
@@ -1061,7 +1073,7 @@
     }
 
     // ===== Word Game Tab (Hebrew / English) =====
-    function WordGameTab({ levels, storagePrefix, direction, language, labels, sound, numQuestions, passPercent, onShowTab, activeTab, setActiveTab }) {
+    function WordGameTab({ levels, storagePrefix, direction, language, labels, sound, onShowTab, activeTab, setActiveTab }) {
       const [screen, setScreen] = useState('home');
       const [selectedLevel, setSelectedLevel] = useState(null);
       const [words, setWords] = useState([]);
@@ -1079,6 +1091,21 @@
       const [rewardGame, setRewardGame] = useState(0);
       const [showRewardIntro, setShowRewardIntro] = useState(false);
 
+      // Own settings
+      const [numQuestions, setNumQuestions] = useState(() => {
+        try { return parseInt(localStorage.getItem(`ella_${storagePrefix}_numQ`) || '10'); } catch { return 10; }
+      });
+      const [passPercent, setPassPercent] = useState(() => {
+        try { return parseInt(localStorage.getItem(`ella_${storagePrefix}_pass`) || '80'); } catch { return 80; }
+      });
+      const [showSettings, setShowSettings] = useState(false);
+      const [showHistory, setShowHistory] = useState(false);
+
+      // Own history
+      const [gameHistory, setGameHistory] = useState(() => {
+        try { return JSON.parse(localStorage.getItem(`ella_${storagePrefix}_history`) || '[]'); } catch { return []; }
+      });
+
       // Word game state
       const [scrambled, setScrambled] = useState([]);
       const [selected, setSelected] = useState([]);
@@ -1092,6 +1119,28 @@
           localStorage.setItem(`ella_${storagePrefix}_levels`, JSON.stringify(levelScores));
         } catch {}
       }, [totalPoints, levelScores]);
+
+      useEffect(() => {
+        try {
+          localStorage.setItem(`ella_${storagePrefix}_numQ`, String(numQuestions));
+          localStorage.setItem(`ella_${storagePrefix}_pass`, String(passPercent));
+        } catch {}
+      }, [numQuestions, passPercent]);
+
+      useEffect(() => {
+        try { localStorage.setItem(`ella_${storagePrefix}_history`, JSON.stringify(gameHistory)); } catch {}
+      }, [gameHistory]);
+
+      const addToHistory = (level, finalScore, pct, didPass) => {
+        const entry = {
+          date: new Date().toLocaleDateString('he-IL'),
+          time: new Date().toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' }),
+          level: level.name, emoji: level.emoji,
+          questions: numQuestions, required: passPercent,
+          correct: finalScore, pct, passed: didPass,
+        };
+        setGameHistory(prev => [entry, ...prev].slice(0, 10));
+      };
 
       const isLevelUnlocked = (idx) => {
         if (idx === 0) return true;
@@ -1194,6 +1243,7 @@
             if (!old || pct > old.score) return { ...prev, [selectedLevel.id]: { level: selectedLevel.name, score: pct } };
             return prev;
           });
+          addToHistory(selectedLevel, finalScore, pct, didPass);
         }
         if (didPass) {
           sound.playCelebration();
@@ -1302,6 +1352,94 @@
               </div>
             </div>
             <div className="w-full max-w-2xl space-y-4">
+              <div className="flex gap-2 justify-center">
+                <button onClick={() => { setShowSettings(!showSettings); setShowHistory(false); }}
+                  className={`btn-option rounded-2xl px-5 py-2 font-bold text-lg shadow-lg transition-all ${
+                    showSettings ? 'bg-white text-purple-600' : 'bg-white/30 text-white hover:bg-white/50'
+                  }`}>{labels.settings}</button>
+                <button onClick={() => { setShowHistory(!showHistory); setShowSettings(false); }}
+                  className={`btn-option rounded-2xl px-5 py-2 font-bold text-lg shadow-lg transition-all ${
+                    showHistory ? 'bg-white text-purple-600' : 'bg-white/30 text-white hover:bg-white/50'
+                  }`}>{labels.history}</button>
+              </div>
+
+              {showSettings && (
+                <div className="bg-white/90 backdrop-blur-md rounded-3xl p-5 shadow-xl animate-slideUp">
+                  <h3 className="text-xl font-bold text-purple-700 mb-4 text-center">{labels.settingsTitle}</h3>
+                  <div className="space-y-5">
+                    <div>
+                      <label className="text-gray-700 font-bold block mb-2">
+                        {labels.questionsLabel} <span className="text-purple-600 text-2xl">{numQuestions}</span>
+                      </label>
+                      <input type="range" min="5" max="50" step="5" value={numQuestions}
+                        onChange={(e) => setNumQuestions(parseInt(e.target.value))}
+                        className="w-full h-3 bg-purple-200 rounded-lg appearance-none cursor-pointer accent-purple-500" />
+                      <div className="flex justify-between text-sm text-gray-400 mt-1">
+                        <span>5</span><span>15</span><span>25</span><span>35</span><span>50</span>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-gray-700 font-bold block mb-2">
+                        {labels.passLabel} <span className="text-purple-600 text-2xl">{passPercent}%</span>
+                      </label>
+                      <input type="range" min="50" max="100" step="5" value={passPercent}
+                        onChange={(e) => setPassPercent(parseInt(e.target.value))}
+                        className="w-full h-3 bg-pink-200 rounded-lg appearance-none cursor-pointer accent-pink-500" />
+                      <div className="flex justify-between text-sm text-gray-400 mt-1">
+                        <span>50%</span><span>65%</span><span>80%</span><span>90%</span><span>100%</span>
+                      </div>
+                    </div>
+                    <div className="bg-purple-50 rounded-2xl p-3 text-center">
+                      <p className="text-gray-600">
+                        {labels.toPass}{' '}
+                        <span className="font-black text-purple-600 text-xl">{Math.ceil(numQuestions * passPercent / 100)}</span>
+                        {' '}{labels.outOf} {numQuestions}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {showHistory && (
+                <div className="bg-white/90 backdrop-blur-md rounded-3xl p-5 shadow-xl animate-slideUp">
+                  <h3 className="text-xl font-bold text-purple-700 mb-4 text-center">{labels.historyTitle}</h3>
+                  {gameHistory.length === 0 ? (
+                    <p className="text-center text-gray-400 py-4">{labels.noGames}</p>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b-2 border-purple-200">
+                            <th className="py-2 px-2 text-right text-purple-600">{labels.dateCol}</th>
+                            <th className="py-2 px-2 text-right text-purple-600">{labels.levelCol}</th>
+                            <th className="py-2 px-2 text-center text-purple-600">{labels.questionsCol}</th>
+                            <th className="py-2 px-2 text-center text-purple-600">{labels.requiredCol}</th>
+                            <th className="py-2 px-2 text-center text-purple-600">{labels.correctCol}</th>
+                            <th className="py-2 px-2 text-center text-purple-600">{labels.resultCol}</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {gameHistory.map((g, i) => (
+                            <tr key={i} className={`border-b border-gray-100 ${g.passed ? 'bg-green-50' : 'bg-red-50'}`}>
+                              <td className="py-2 px-2 text-gray-500 text-xs">{g.date}<br/>{g.time}</td>
+                              <td className="py-2 px-2 font-bold">{g.emoji} {g.level}</td>
+                              <td className="py-2 px-2 text-center font-bold">{g.questions}</td>
+                              <td className="py-2 px-2 text-center font-bold">{g.required}%</td>
+                              <td className="py-2 px-2 text-center">
+                                <span className="font-black text-lg">{g.correct}</span>
+                                <span className="text-gray-400">/{g.questions}</span>
+                                <span className="block text-xs text-gray-500">{g.pct}%</span>
+                              </td>
+                              <td className="py-2 px-2 text-center text-2xl">{g.passed ? '✅' : '❌'}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {levels.map((level, idx) => {
                 const unlocked = isLevelUnlocked(idx);
                 const best = levelScores[level.id];
@@ -1670,8 +1808,7 @@
         const wordDir = activeTab === 'hebrew' ? 'rtl' : 'ltr';
         return <WordGameTab levels={wordLevels} storagePrefix={activeTab === 'hebrew' ? 'heb' : 'eng'}
           direction={wordDir} language={activeTab} labels={wordLabels} sound={sound}
-          numQuestions={numQuestions} passPercent={passPercent} onShowTab={() => {}}
-          activeTab={activeTab} setActiveTab={setActiveTab} />;
+          onShowTab={() => {}} activeTab={activeTab} setActiveTab={setActiveTab} />;
       }
 
       // ===== PHOTO OVERLAY (must be first — overrides any screen) =====
