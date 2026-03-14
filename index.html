@@ -374,76 +374,97 @@
 
     // ===== Word Game Levels =====
     const HEBREW_WORD_LEVELS = [
-      { id: 'heb1', name: 'רמה 1', emoji: '🌱', description: '2 אותיות', color: 'from-blue-400 to-cyan-500', words: [
+      { id: 'heb1', name: 'רמה 1', emoji: '🌱', description: 'עד 2 אותיות', color: 'from-blue-400 to-cyan-500', maxLen: 2, words: [
         {word:'דג',emoji:'🐟'},{word:'לב',emoji:'❤️'},{word:'גן',emoji:'🌿'},{word:'יד',emoji:'✋'},{word:'אם',emoji:'👩'},
         {word:'אב',emoji:'👨'},{word:'עט',emoji:'🖊️'},{word:'פה',emoji:'👄'},{word:'אף',emoji:'👃'},{word:'כד',emoji:'🏺'},
         {word:'חם',emoji:'🌡️'},{word:'גב',emoji:'🔙'},{word:'טל',emoji:'💧'},{word:'שם',emoji:'📛'},{word:'כן',emoji:'✅'},
+        {word:'רק',emoji:'☝️'},{word:'עד',emoji:'🔢'},{word:'בן',emoji:'👦'},{word:'בת',emoji:'👧'},{word:'עז',emoji:'🐐'},
+        {word:'קר',emoji:'❄️'},{word:'חי',emoji:'🌱'},{word:'דם',emoji:'🩸'},{word:'גל',emoji:'🌊'},{word:'צל',emoji:'🌑'},
       ]},
-      { id: 'heb2', name: 'רמה 2', emoji: '🌸', description: '3 אותיות', color: 'from-teal-400 to-blue-500', words: [
+      { id: 'heb2', name: 'רמה 2', emoji: '🌸', description: 'עד 3 אותיות', color: 'from-teal-400 to-blue-500', maxLen: 3, words: [
         {word:'כלב',emoji:'🐶'},{word:'בית',emoji:'🏠'},{word:'שמש',emoji:'☀️'},{word:'ספר',emoji:'📖'},{word:'פרח',emoji:'🌸'},
         {word:'גשם',emoji:'🌧️'},{word:'ירח',emoji:'🌙'},{word:'דוב',emoji:'🐻'},{word:'פיל',emoji:'🐘'},{word:'מים',emoji:'💧'},
         {word:'אבן',emoji:'🪨'},{word:'רכב',emoji:'🚗'},{word:'ילד',emoji:'👦'},{word:'צבע',emoji:'🎨'},{word:'דבש',emoji:'🍯'},
-        {word:'עוף',emoji:'🐓'},{word:'חלב',emoji:'🥛'},{word:'לחם',emoji:'🍞'},
+        {word:'עוף',emoji:'🐓'},{word:'חלב',emoji:'🥛'},{word:'לחם',emoji:'🍞'},{word:'שלג',emoji:'🌨️'},{word:'רוח',emoji:'💨'},
+        {word:'קוף',emoji:'🐒'},{word:'נמר',emoji:'🐆'},{word:'זהב',emoji:'🥇'},{word:'כסף',emoji:'🥈'},{word:'דקל',emoji:'🌴'},
+        {word:'ציץ',emoji:'🌼'},{word:'אגס',emoji:'🍐'},{word:'תות',emoji:'🍓'},{word:'חול',emoji:'🏖️'},{word:'עכש',emoji:'🦎'},
       ]},
-      { id: 'heb3', name: 'רמה 3', emoji: '🌟', description: '4 אותיות', color: 'from-indigo-400 to-purple-500', words: [
+      { id: 'heb3', name: 'רמה 3', emoji: '🌟', description: 'עד 4 אותיות', color: 'from-indigo-400 to-purple-500', maxLen: 4, words: [
         {word:'כדור',emoji:'⚽'},{word:'כוכב',emoji:'⭐'},{word:'תפוח',emoji:'🍎'},{word:'עוגה',emoji:'🎂'},{word:'חתול',emoji:'🐱'},
         {word:'ילדה',emoji:'👧'},{word:'ארנב',emoji:'🐰'},{word:'אריה',emoji:'🦁'},{word:'סוכר',emoji:'🍬'},{word:'מטוס',emoji:'✈️'},
-        {word:'פרפר',emoji:'🦋'},{word:'גלגל',emoji:'🎡'},{word:'עכבר',emoji:'🐭'},{word:'משקף',emoji:'👓'},{word:'דובדב',emoji:'🍒'},
+        {word:'פרפר',emoji:'🦋'},{word:'גלגל',emoji:'🎡'},{word:'עכבר',emoji:'🐭'},{word:'משקף',emoji:'👓'},{word:'כובע',emoji:'🎩'},
+        {word:'שעון',emoji:'⏰'},{word:'ענבל',emoji:'🔔'},{word:'סירה',emoji:'⛵'},{word:'דובדב',emoji:'🍒'},{word:'מברשת',emoji:'🪥'},
+        {word:'מזלג',emoji:'🍴'},{word:'כפתר',emoji:'🔘'},{word:'ספסל',emoji:'🪑'},{word:'מנעל',emoji:'👞'},{word:'מגדל',emoji:'🗼'},
+        {word:'סלסל',emoji:'🧺'},{word:'תרמיל',emoji:'🎒'},{word:'קשת',emoji:'🌈'},{word:'דולפן',emoji:'🐬'},{word:'פנגוין',emoji:'🐧'},
       ]},
-      { id: 'heb4', name: 'רמה 4', emoji: '🔥', description: '5+ אותיות', color: 'from-purple-400 to-pink-500', words: [
+      { id: 'heb4', name: 'רמה 4', emoji: '🔥', description: 'עד 6 אותיות', color: 'from-purple-400 to-pink-500', maxLen: 6, words: [
         {word:'גלידה',emoji:'🍦'},{word:'ארנבת',emoji:'🐰'},{word:'שמלה',emoji:'👗'},{word:'מכונה',emoji:'⚙️'},{word:'תפוז',emoji:'🍊'},
-        {word:'בננה',emoji:'🍌'},{word:'סירה',emoji:'⛵'},{word:'מטריה',emoji:'☂️'},{word:'שעון',emoji:'⏰'},{word:'כובע',emoji:'🎩'},
-        {word:'דלעת',emoji:'🎃'},{word:'עגבניה',emoji:'🍅'},{word:'מחברת',emoji:'📓'},{word:'שוקולד',emoji:'🍫'},{word:'תרנגול',emoji:'🐓'},
+        {word:'בננה',emoji:'🍌'},{word:'מטריה',emoji:'☂️'},{word:'דלעת',emoji:'🎃'},{word:'עגבניה',emoji:'🍅'},{word:'מחברת',emoji:'📓'},
+        {word:'שוקולד',emoji:'🍫'},{word:'תרנגול',emoji:'🐓'},{word:'אופניים',emoji:'🚲'},{word:'מגלשה',emoji:'🛝'},{word:'ממתק',emoji:'🍭'},
+        {word:'תנינה',emoji:'🐊'},{word:'ינשוף',emoji:'🦉'},{word:'סנדל',emoji:'👡'},{word:'מטבח',emoji:'🍳'},{word:'שולחן',emoji:'🪑'},
+        {word:'מכנסיים',emoji:'👖'},{word:'נעליים',emoji:'👟'},{word:'מסוק',emoji:'🚁'},{word:'טלפון',emoji:'📱'},{word:'מחשב',emoji:'💻'},
+        {word:'מקלדת',emoji:'⌨️'},{word:'ארוחה',emoji:'🍽️'},{word:'גיטרה',emoji:'🎸'},{word:'תפוחון',emoji:'🍏'},{word:'קרקס',emoji:'🎪'},
       ]},
     ];
     const ENGLISH_WORD_LEVELS = [
-      { id: 'eng1', name: 'Level 1', emoji: '🌱', description: '2-3 letters', color: 'from-green-400 to-emerald-500', words: [
+      { id: 'eng1', name: 'Level 1', emoji: '🌱', description: 'up to 3 letters', color: 'from-green-400 to-emerald-500', maxLen: 3, words: [
         {word:'cat',emoji:'🐱'},{word:'dog',emoji:'🐶'},{word:'sun',emoji:'☀️'},{word:'hat',emoji:'🎩'},{word:'cup',emoji:'☕'},
         {word:'bed',emoji:'🛏️'},{word:'car',emoji:'🚗'},{word:'bus',emoji:'🚌'},{word:'fox',emoji:'🦊'},{word:'egg',emoji:'🥚'},
         {word:'pen',emoji:'🖊️'},{word:'ant',emoji:'🐜'},{word:'bee',emoji:'🐝'},{word:'pig',emoji:'🐷'},{word:'red',emoji:'🔴'},
+        {word:'cow',emoji:'🐄'},{word:'owl',emoji:'🦉'},{word:'bat',emoji:'🦇'},{word:'hen',emoji:'🐔'},{word:'jam',emoji:'🍯'},
+        {word:'map',emoji:'🗺️'},{word:'nut',emoji:'🥜'},{word:'pot',emoji:'🍲'},{word:'rug',emoji:'🧶'},{word:'wet',emoji:'💦'},
       ]},
-      { id: 'eng2', name: 'Level 2', emoji: '🌸', description: '4 letters', color: 'from-teal-400 to-cyan-500', words: [
+      { id: 'eng2', name: 'Level 2', emoji: '🌸', description: 'up to 4 letters', color: 'from-teal-400 to-cyan-500', maxLen: 4, words: [
         {word:'fish',emoji:'🐟'},{word:'bird',emoji:'🐦'},{word:'tree',emoji:'🌳'},{word:'star',emoji:'⭐'},{word:'cake',emoji:'🎂'},
         {word:'bear',emoji:'🐻'},{word:'frog',emoji:'🐸'},{word:'moon',emoji:'🌙'},{word:'rain',emoji:'🌧️'},{word:'book',emoji:'📖'},
         {word:'duck',emoji:'🦆'},{word:'lion',emoji:'🦁'},{word:'ship',emoji:'🚢'},{word:'ball',emoji:'⚽'},{word:'rose',emoji:'🌹'},
+        {word:'snow',emoji:'❄️'},{word:'bell',emoji:'🔔'},{word:'drum',emoji:'🥁'},{word:'lamp',emoji:'💡'},{word:'leaf',emoji:'🍃'},
+        {word:'kite',emoji:'🪁'},{word:'gift',emoji:'🎁'},{word:'corn',emoji:'🌽'},{word:'goat',emoji:'🐐'},{word:'wolf',emoji:'🐺'},
+        {word:'nest',emoji:'🪹'},{word:'seal',emoji:'🦭'},{word:'crab',emoji:'🦀'},{word:'pear',emoji:'🍐'},{word:'sock',emoji:'🧦'},
       ]},
-      { id: 'eng3', name: 'Level 3', emoji: '🌟', description: '5 letters', color: 'from-indigo-400 to-purple-500', words: [
+      { id: 'eng3', name: 'Level 3', emoji: '🌟', description: 'up to 5 letters', color: 'from-indigo-400 to-purple-500', maxLen: 5, words: [
         {word:'apple',emoji:'🍎'},{word:'house',emoji:'🏠'},{word:'horse',emoji:'🐴'},{word:'mouse',emoji:'🐭'},{word:'cloud',emoji:'☁️'},
         {word:'beach',emoji:'🏖️'},{word:'heart',emoji:'❤️'},{word:'water',emoji:'💧'},{word:'candy',emoji:'🍬'},{word:'lemon',emoji:'🍋'},
         {word:'grape',emoji:'🍇'},{word:'tiger',emoji:'🐯'},{word:'train',emoji:'🚂'},{word:'plant',emoji:'🌱'},{word:'smile',emoji:'😊'},
+        {word:'bread',emoji:'🍞'},{word:'chair',emoji:'🪑'},{word:'clock',emoji:'⏰'},{word:'dance',emoji:'💃'},{word:'earth',emoji:'🌍'},
+        {word:'flame',emoji:'🔥'},{word:'ghost',emoji:'👻'},{word:'knife',emoji:'🔪'},{word:'light',emoji:'💡'},{word:'melon',emoji:'🍈'},
+        {word:'ocean',emoji:'🌊'},{word:'pizza',emoji:'🍕'},{word:'queen',emoji:'👑'},{word:'snail',emoji:'🐌'},{word:'whale',emoji:'🐋'},
       ]},
-      { id: 'eng4', name: 'Level 4', emoji: '🔥', description: '6+ letters', color: 'from-purple-400 to-pink-500', words: [
+      { id: 'eng4', name: 'Level 4', emoji: '🔥', description: 'up to 7 letters', color: 'from-purple-400 to-pink-500', maxLen: 7, words: [
         {word:'banana',emoji:'🍌'},{word:'rabbit',emoji:'🐰'},{word:'flower',emoji:'🌸'},{word:'rocket',emoji:'🚀'},{word:'castle',emoji:'🏰'},
         {word:'dragon',emoji:'🐉'},{word:'turtle',emoji:'🐢'},{word:'cookie',emoji:'🍪'},{word:'cherry',emoji:'🍒'},{word:'muffin',emoji:'🧁'},
         {word:'pencil',emoji:'✏️'},{word:'monkey',emoji:'🐵'},{word:'garden',emoji:'🌻'},{word:'orange',emoji:'🍊'},{word:'kitten',emoji:'🐱'},
+        {word:'bridge',emoji:'🌉'},{word:'candle',emoji:'🕯️'},{word:'donkey',emoji:'🫏'},{word:'gopher',emoji:'🐿️'},{word:'hammer',emoji:'🔨'},
+        {word:'island',emoji:'🏝️'},{word:'jungle',emoji:'🌴'},{word:'ladder',emoji:'🪜'},{word:'mirror',emoji:'🪞'},{word:'parrot',emoji:'🦜'},
+        {word:'spider',emoji:'🕷️'},{word:'sunset',emoji:'🌅'},{word:'window',emoji:'🪟'},{word:'pillow',emoji:'🛏️'},{word:'tomato',emoji:'🍅'},
       ]},
     ];
     const WORD_LABELS = {
-      hebrew: { title: 'אב משחק המילים אב', subtitle: '✨ בואו נלמד לאיית! ✨', correct: '✅ נכון!',
+      hebrew: { title: 'משחק המילים', subtitle: '✨ בואו נלמד לאיית! ✨', correct: '✅ נכון!',
         wrong: '❌ המילה היא: ', spell: '🤔 מה המילה...?', wordOf: 'מילה', undo: '↩️ בטל',
         done: '🎉 סידרתם {s} מילים נכון מתוך {t}! 🎉', mission: 'המשימה שלכם!',
         needCorrect: 'צריך לסדר נכון:', words: 'מילים', allowedErrors: 'מותר לטעות רק:',
         times: 'פעמים', youCanDoIt: '💪 אתם יכולים! 💪', startPlay: '🎮 התחילו לשחק!',
         wordsUpTo: 'מילים בנות', back: '🏠 חזרה', points: 'נקודות', errors: 'טעויות',
         levelLocked: 'ברמה הקודמת 🔒', need: 'צריך',
-        settings: '⚙️ הגדרות', history: '📋 היסטוריה', settingsTitle: '⚙️ הגדרות משחקון',
+        settings: '⚙️ הגדרות', history: '📋 לוח תוצאות', settingsTitle: '⚙️ הגדרות משחקון',
         questionsLabel: '📝 מספר מילים במשחקון:', passLabel: '🎯 אחוז הצלחה נדרש:',
         toPass: 'כדי לעבור צריך לסדר נכון לפחות', outOf: 'מילים מתוך',
-        historyTitle: '📋 10 משחקים אחרונים', noGames: 'עדיין אין משחקים 🎮',
+        historyTitle: '📋 לוח תוצאות', noGames: 'עדיין אין משחקים 🎮',
         dateCol: 'תאריך', levelCol: 'רמה', questionsCol: 'שאלות', requiredCol: 'נדרש',
         correctCol: 'נכונות', resultCol: 'תוצאה',
       },
-      english: { title: '🔠 Word Game 🔠', subtitle: '✨ Learn to spell! ✨', correct: '✅ Correct!',
+      english: { title: 'Word Game', subtitle: '✨ Learn to spell! ✨', correct: '✅ Correct!',
         wrong: '❌ The word is: ', spell: '🤔 What word is this...?', wordOf: 'Word', undo: '↩️ Undo',
         done: '🎉 You spelled {s} out of {t} correctly! 🎉', mission: 'Your Mission!',
         needCorrect: 'Need to spell correctly:', words: 'words', allowedErrors: 'Allowed mistakes:',
         times: 'times', youCanDoIt: '💪 You can do it! 💪', startPlay: '🎮 Start Playing!',
         wordsUpTo: 'Words with', back: '🏠 Back', points: 'points', errors: 'mistakes',
         levelLocked: 'in previous level 🔒', need: 'Need',
-        settings: '⚙️ Settings', history: '📋 History', settingsTitle: '⚙️ Game Settings',
+        settings: '⚙️ Settings', history: '📋 Scoreboard', settingsTitle: '⚙️ Game Settings',
         questionsLabel: '📝 Words per game:', passLabel: '🎯 Pass percentage:',
         toPass: 'To pass you need to spell at least', outOf: 'words out of',
-        historyTitle: '📋 Last 10 Games', noGames: 'No games yet 🎮',
+        historyTitle: '📋 Scoreboard', noGames: 'No games yet 🎮',
         dateCol: 'Date', levelCol: 'Level', questionsCol: 'Words', requiredCol: 'Required',
         correctCol: 'Correct', resultCol: 'Result',
       },
@@ -1059,11 +1080,12 @@
         <div className="flex gap-2 mb-4 w-full max-w-2xl justify-center">
           {tabs.map(tab => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 py-3 px-2 rounded-2xl font-bold text-lg transition-all ${
+              className={`flex-1 py-3 px-2 rounded-2xl font-bold text-lg transition-all transform ${
                 activeTab === tab.id
-                  ? `bg-gradient-to-r ${tab.color} text-white shadow-lg scale-105`
-                  : 'bg-white/30 text-white/70 hover:bg-white/40'
-              }`}>
+                  ? `bg-gradient-to-r ${tab.color} text-white shadow-lg scale-105 z-10`
+                  : 'bg-white/30 text-white/70 hover:bg-white/40 scale-100'
+              }`}
+              style={{ minHeight: '72px' }}>
               <span className="text-2xl block">{tab.emoji}</span>
               <span className="text-sm">{tab.label}</span>
             </button>
@@ -1080,6 +1102,7 @@
       const [currentW, setCurrentW] = useState(0);
       const [score, setScore] = useState(0);
       const [errors, setErrors] = useState(0);
+      const [streak, setStreak] = useState(0);
       const [totalPoints, setTotalPoints] = useState(() => {
         try { return parseInt(localStorage.getItem(`ella_${storagePrefix}_points`) || '0'); } catch { return 0; }
       });
@@ -1161,12 +1184,19 @@
       const startGame = (level) => {
         sound.playClick();
         setSelectedLevel(level);
-        const shuffled = [...level.words].sort(() => Math.random() - 0.5);
+        // Cumulative: gather words from all levels up to this one
+        const levelIdx = levels.indexOf(level);
+        let allWords = [];
+        for (let i = 0; i <= levelIdx; i++) {
+          allWords = allWords.concat(levels[i].words);
+        }
+        const shuffled = [...allWords].sort(() => Math.random() - 0.5);
         const picked = shuffled.slice(0, numQuestions);
         setWords(picked);
         setCurrentW(0);
         setScore(0);
         setErrors(0);
+        setStreak(0);
         setFeedback(null);
         setAnswered(false);
         const letters = shuffleWord(picked[0].word);
@@ -1199,14 +1229,17 @@
           setAnswered(true);
           const built = newSel.map(i => scrambled[i]).join('');
           const correct = built === words[currentW].word;
+          const delay = correct ? 1500 : 2500;
 
           if (correct) {
             sound.playCorrect();
             setScore(s => s + 1);
+            setStreak(s => s + 1);
             setFeedback('correct');
           } else {
             sound.playWrong();
-            setFeedback('wrong');
+            setStreak(0);
+            setFeedback({ type: 'wrong', correctWord: words[currentW].word, emoji: words[currentW].emoji });
             const newErrors = errors + 1;
             setErrors(newErrors);
             const maxAllowed = numQuestions - Math.ceil(numQuestions * passPercent / 100);
@@ -1214,7 +1247,7 @@
               setTimeout(() => {
                 const pct = Math.round((score / numQuestions) * 100);
                 finishGame(score, pct, false);
-              }, 1500);
+              }, delay);
               return;
             }
           }
@@ -1230,7 +1263,7 @@
               const didPass = pct >= passPercent;
               finishGame(finalScore, pct, didPass);
             }
-          }, 1500);
+          }, delay);
         }
       };
 
@@ -1255,7 +1288,7 @@
         setTimeout(() => {
           setShowPhoto(null);
           if (didPass) {
-            setRewardGame(Math.floor(Math.random() * 4));
+            setRewardGame(Math.floor(Math.random() * 3));
             setShowRewardIntro(true);
             setScreen('reward');
           } else {
@@ -1297,7 +1330,7 @@
       }
 
       if (screen === 'reward' && showRewardIntro) {
-        const gameNames = ['🧠 משחק זיכרון', '🧩 השלמת סדרות', '🔍 מצאו הבדלים', '🔤 סידור מילים'];
+        const gameNames = ['🧠 משחק זיכרון', '🧩 השלמת סדרות', '🔍 מצאו הבדלים'];
         setTimeout(() => setShowRewardIntro(false), 3000);
         return (
           <div className="min-h-screen flex items-center justify-center p-4">
@@ -1312,7 +1345,7 @@
       }
 
       if (screen === 'reward') {
-        const games = [MemoryMatch, PatternSequence, SpotDifference, WordScramble];
+        const games = [MemoryMatch, PatternSequence, SpotDifference];
         const RewardGame = games[rewardGame];
         return <RewardGame onDone={() => { sound.playClick(); goHome(); }} sound={sound} />;
       }
@@ -1490,25 +1523,39 @@
         const isDanger = remaining <= 0;
         return (
           <div className="min-h-screen p-4 flex flex-col items-center" dir={direction}>
-            <div className="w-full max-w-lg">
-              <div className="flex items-center justify-between mb-3">
-                <button onClick={goHome} className="bg-white/20 hover:bg-white/30 text-white font-bold rounded-full px-4 py-2 text-sm">
+            {/* Top bar - matches math game style */}
+            <div className="w-full max-w-lg mb-4">
+              <div className="flex justify-between items-center mb-2">
+                <button onClick={goHome}
+                  className="bg-white/30 hover:bg-white/50 backdrop-blur-sm rounded-full px-4 py-2
+                             text-white font-bold transition-all hover:scale-105">
                   {labels.back}
                 </button>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                   <div className="bg-white/30 backdrop-blur-sm rounded-full px-4 py-2 flex items-center gap-2">
-                    <span>⭐</span><span className="font-bold text-white">{score}/{currentW + (answered ? 1 : 0)}</span>
+                    <span>🔥</span>
+                    <span className="font-bold text-white">{streak}</span>
                   </div>
-                  <div className={`backdrop-blur-sm rounded-full px-3 py-2 flex items-center gap-1 text-sm transition-all ${
-                    isDanger ? 'bg-red-500/60' : isLast ? 'bg-red-400/50 animate-pulse' : 'bg-white/30'
-                  }`}>
-                    <span>{isDanger ? '🚫' : isLast ? '⚠️' : '❌'}</span>
-                    <span className={`font-bold ${isDanger ? 'text-red-100' : isLast ? 'text-yellow-100' : 'text-white'}`}>
-                      {remaining < 0 ? 0 : remaining} {labels.errors}
-                    </span>
+                  <div className="bg-white/30 backdrop-blur-sm rounded-full px-4 py-2 flex items-center gap-2">
+                    <span>⭐</span>
+                    <span className="font-bold text-white">{score}/{currentW + (answered ? 1 : 0)}</span>
                   </div>
+                  {(() => {
+                    return (
+                      <div className={`backdrop-blur-sm rounded-full px-3 py-2 flex items-center gap-1 text-sm transition-all ${
+                        isDanger ? 'bg-red-500/60' : isLast ? 'bg-red-400/50 animate-pulse' : 'bg-white/30'
+                      }`}>
+                        <span>{isDanger ? '🚫' : isLast ? '⚠️' : '❌'}</span>
+                        <span className={`font-bold ${isDanger ? 'text-red-100' : isLast ? 'text-yellow-100' : 'text-white'}`}>
+                          {remaining < 0 ? 0 : remaining} {labels.errors}
+                        </span>
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
+
+              {/* Progress */}
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-white/80 text-sm font-bold">{labels.wordOf} {currentW + 1}/{words.length}</span>
                 <span className="text-white/60 text-sm">{selectedLevel.emoji} {selectedLevel.name}</span>
@@ -1516,7 +1563,8 @@
               <ProgressBar current={currentW + 1} total={words.length} />
             </div>
 
-            <div className={`w-full max-w-lg mt-4 ${feedback === 'wrong' ? 'animate-shake' : ''}`}>
+            {/* Question Card */}
+            <div className={`w-full max-w-lg ${feedback && feedback.type === 'wrong' ? 'animate-shake' : ''}`}>
               <div className="bg-white/90 backdrop-blur-md rounded-3xl shadow-2xl p-6 md:p-8 text-center">
                 <p className="text-gray-500 font-bold mb-2">{labels.spell}</p>
                 <div className="text-7xl mb-6">{w.emoji}</div>
@@ -1542,10 +1590,25 @@
 
                 <button onClick={handleUndo} className="text-purple-500 font-bold text-lg hover:text-purple-700">{labels.undo}</button>
 
+                {/* Feedback */}
                 {feedback && (
-                  <p className={`mt-3 text-xl font-bold animate-bounceIn ${feedback === 'correct' ? 'text-green-600' : 'text-red-500'}`}>
-                    {feedback === 'correct' ? labels.correct : `${labels.wrong}${w.word}`}
-                  </p>
+                  <div className={`animate-bounceIn rounded-2xl p-4 mt-4 ${
+                    feedback === 'correct'
+                      ? 'bg-green-100 border-2 border-green-300'
+                      : 'bg-red-50 border-2 border-red-200'
+                  }`}>
+                    {feedback === 'correct' ? (
+                      <p className="text-xl font-bold text-green-600">{labels.correct}</p>
+                    ) : (
+                      <div>
+                        <p className="text-xl font-bold text-red-500 mb-2">{labels.wrong}</p>
+                        <div className="flex items-center justify-center gap-3">
+                          <span className="text-4xl">{feedback.emoji}</span>
+                          <span className="text-3xl font-black text-gray-800" dir={direction}>{feedback.correctWord}</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
             </div>
@@ -1782,7 +1845,7 @@
               setShowPhoto(null);
               setShowConfetti(false);
               if (didPass) {
-                setRewardGame(Math.floor(Math.random() * 4));
+                setRewardGame(Math.floor(Math.random() * 3));
                 setShowRewardIntro(true);
                 setScreen('reward');
               } else {
@@ -1866,7 +1929,7 @@
 
       // ===== REWARD INTRO (gift screen) =====
       if (screen === 'reward' && showRewardIntro) {
-        const gameNames = ['🧠 משחק זיכרון', '🧩 השלמת סדרות', '🔍 מצאו הבדלים', '🔤 סידור מילים'];
+        const gameNames = ['🧠 משחק זיכרון', '🧩 השלמת סדרות', '🔍 מצאו הבדלים'];
         setTimeout(() => setShowRewardIntro(false), 3000);
         return (
           <div className="min-h-screen flex items-center justify-center p-4">
@@ -1882,7 +1945,7 @@
 
       // ===== REWARD MINI-GAME =====
       if (screen === 'reward') {
-        const games = [MemoryMatch, PatternSequence, SpotDifference, WordScramble];
+        const games = [MemoryMatch, PatternSequence, SpotDifference];
         const RewardGame = games[rewardGame];
         return <RewardGame onDone={() => { sound.playClick(); setScreen('home'); }} sound={sound} />;
       }
@@ -1897,7 +1960,7 @@
             {/* Header */}
             <div className="text-center mb-6 animate-slideUp">
               <h1 className="text-5xl md:text-6xl font-black text-white drop-shadow-lg mb-2">
-                🎀 משחק החשבון 🎀
+                משחק החשבון
               </h1>
               <p className="text-2xl text-white/90 font-bold">✨ בואו נלמד חשבון ביחד! ✨</p>
               <div className="mt-3 flex items-center justify-center gap-3">
@@ -1926,7 +1989,7 @@
                     showHistory ? 'bg-white text-purple-600' : 'bg-white/30 text-white hover:bg-white/50'
                   }`}
                 >
-                  📋 תוצאות אחרונות
+                  📋 לוח תוצאות
                 </button>
               </div>
 
@@ -1999,7 +2062,7 @@
               {/* History Panel */}
               {showHistory && (
                 <div className="bg-white/90 backdrop-blur-md rounded-3xl p-5 shadow-xl animate-slideUp">
-                  <h3 className="text-xl font-bold text-purple-700 mb-4 text-center">📋 10 משחקים אחרונים</h3>
+                  <h3 className="text-xl font-bold text-purple-700 mb-4 text-center">📋 לוח תוצאות</h3>
 
                   {gameHistory.length === 0 ? (
                     <p className="text-center text-gray-400 py-4">עדיין אין משחקים 🎮</p>
